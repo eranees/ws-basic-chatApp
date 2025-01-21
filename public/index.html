@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <script src="socket.io/socket.io.js"></script>
+  <style>
+    body {
+      height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      border: 1px solid black;
+      width: 60%;
+      height: 80%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .message-section {
+      flex: 1;
+      display: flex;
+    }
+
+    #sender-msg,
+    #receiver-msg {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+
+    #sender-msg {
+      text-align: right;
+      background-color: #f0f8ff;
+    }
+
+    #receiver-msg {
+      text-align: left;
+      background-color: #f9f9f9;
+      border-left: 1px solid #ccc;
+    }
+
+    #sender-msg p {
+      margin: 5px 0;
+      color: blue;
+    }
+
+    #receiver-msg p {
+      margin: 5px 0;
+      color: green;
+    }
+
+    .send-msg-section {
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #ddd;
+    }
+
+    .send-msg-section input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .send-msg-section button {
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="message-section">
+      <div id="sender-msg"></div>
+      <div id="receiver-msg"></div>
+    </div>
+    <div class="send-msg-section">
+      <input type="text" id="msg-box" placeholder="Type your message here...">
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    const sendBtn = document.getElementById('send-btn');
+    const senderMsgBox = document.getElementById('sender-msg');
+    const receiverMsgBox = document.getElementById('receiver-msg');
+
+    sendBtn.addEventListener('click', () => {
+      const messageBox = document.getElementById('msg-box');
+      const message = messageBox.value;
+
+      if (message.trim()) {
+        const p = document.createElement('p');
+        p.textContent = message;
+        senderMsgBox.appendChild(p);
+
+        socket.emit('client-message', { message, id: socket.id });
+
+        messageBox.value = '';
+      }
+    });
+
+    socket.on('server-message', (data) => {
+      const { message, id } = data;
+
+      if (id !== socket.id) {
+        const p = document.createElement('p');
+        p.textContent = message;
+        receiverMsgBox.appendChild(p);
+      }
+    });
+  </script>
+</body>
+
+</html>
